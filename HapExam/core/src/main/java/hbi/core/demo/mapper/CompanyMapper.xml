@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- ~ #{copyright}# -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.demo.mapper.CompanyMapper">
+
+<!-- **************查询公司*********************************************************** -->
+    <resultMap id="ComResultMap" type="hbi.core.demo.dto.Company"
+        extends="com.hand.hap.mapper.StdMapper.STD">
+        <result column="COMPANY_ID" property="companyId" jdbcType="DECIMAL" />
+        <result column="COMPANY_NUMBER" property="companyNumber" jdbcType="VARCHAR" />
+        <result column="COMPANY_NAME" property="companyName" jdbcType="VARCHAR" />
+        <result column="ENABLED_FLAG" property="enabledFlag"
+            jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectByCompany" parameterType="hbi.core.demo.dto.Company"
+        resultMap="ComResultMap">
+        SELECT 
+        company_id,company_number,
+        company_name,enabled_flag
+        from hap_org_companys
+        <where>
+            <if test="companyId != null">
+                and company_id = #{companyId,jdbcType=DECIMAL}
+            </if>
+            <if test="companyNumber != null">
+                AND company_number like #{companyNumber,jdbcType=VARCHAR}
+            </if>
+            <if test="companyName != null">
+                AND company_name like #{companyName,jdbcType=VARCHAR}
+            </if>
+            <if test="enabledFlag != null">
+                AND enabled_flag like #{enabledFlag,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+<!-- *************查询顾客************************************************************ -->
+     <resultMap id="CusResultMap" type="hbi.core.demo.dto.Customer"
+        extends="com.hand.hap.mapper.StdMapper.STD">
+        <result column="CUSTOMER_ID" property="customerId" jdbcType="DECIMAL" />
+        <result column="CUSTOMER_NUMBER" property="customerNumber" jdbcType="VARCHAR" />
+        <result column="CUSTOMER_NAME" property="customerName" jdbcType="VARCHAR" />
+        <result column="COMPANY_ID" property="companyId" jdbcType="DECIMAL" />
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <select id = "selectByCustomer" parameterType = "hbi.core.demo.dto.Customer"
+        resultMap = "CusResultMap">
+        select customer_id,
+               customer_number,
+               customer_name,
+               company_id 
+               from hap_ar_customers
+        <where>
+            company_id is not null
+            AND company_id = #{companyId,jdbcType=DECIMAL}
+            <if test="customerId != null">
+                AND customer_id = #{customerId,jdbcType=DECIMAL}
+            </if>
+            <if test="customerNumber != null">
+                AND customer_number like #{customerNumber,jdbcType=VARCHAR}
+            </if>
+            <if test="customerName != null">
+                AND customer_name like #{customerName,jdbcType=VARCHAR}
+            </if>
+        </where>
+        </select>
+        
+<!-- **********查询物料*************************************************************** -->
+       <resultMap id = "ItemResultMap" type="hbi.core.demo.dto.Item"
+        extends="com.hand.hap.mapper.StdMapper.STD">
+            <result column="INVENTORY_ITEM_ID" property="inventoryItemId" jdbcType="DECIMAL" />
+            <result column= "ITEM_CODE" property = "itemCode" jdbcType = "VARCHAR"/>
+            <result column = "ITEM_UOM" property = "itemUom" jdbcType = "VARCHAR"/>
+            <result column = "ITEM_DESCRIPTION" property = "itemDescription" jdbcType = "VARCHAR"/>
+       </resultMap>
+       <select id = "selectByItem" parameterType = "hbi.core.demo.dto.Item"
+            resultMap = "ItemResultMap">
+                select 
+                inventory_item_id,
+                item_code,
+                item_uom,
+                item_description
+                from hap_inv_inventory_items
+            <where>
+            <if test="inventoryItemId != null">
+                AND inventory_item_id = #{inventoryItemId,jdbcType=DECIMAL}
+            </if>
+            <if test="itemCode != null">
+                AND item_code like #{itemCode,jdbcType=VARCHAR}
+            </if>
+            <if test="itemUom != null">
+                AND item_uom like #{itemUom,jdbcType=VARCHAR}
+            </if>
+            <if test="itemDescription != null">
+                AND item_description like #{itemDescription,jdbcType=DECIMAL}
+            </if>
+        </where>
+       </select>
+<!-- **********Form查询*************************************************************** -->
+    <resultMap id = "FormResultMap" type="hbi.core.demo.dto.Form"
+        extends="com.hand.hap.mapper.StdMapper.STD">
+            <result column = "ORDER_NUMBER" property = "orderNumber" jdbcType="VARCHAR" />
+            <result column = "COMPANY_NAME" property = "companyName" jdbcType = "VARCHAR"/>
+            <result column = "company_id" property="companyId" jdbcType="DECIMAL" />
+            <result column = "CUSTOMER_NAME" property = "customerName" jdbcType = "VARCHAR"/>
+            <result column = "ORDER_DATE" property = "orderDate" jdbcType = "TIMESTAMP"/>           
+            <result column = "ORDER_STATUS" property = "orderStatus" jdbcType = "VARCHAR"/>
+            <result column = "ITEM_CODE" property = "itemCode" jdbcType = "VARCHAR"/>
+            <result column = "ITEM_DESCRIPTION" property = "itemDescription" jdbcType = "VARCHAR"/>
+            <result column = "ORDER_QUANTITY_UOM" property = "orderQuaUom" jdbcType = "VARCHAR"/>
+            <result column = "ORDERD_QUANTITY" property = "orderQua" jdbcType = "DECIMAL"/>
+            <result column = "UNIT_SELLING_PRICE" property = "unitSellPrice" jdbcType = "DECIMAL"/>
+            <result column = "DESCRIPTION" property = "description" jdbcType = "VARCHAR"/>
+            <result column = "ADDITION1" property = "comment1" jdbcType = "VARCHAR"/>
+            <result column = "ADDITION2" property = "comment2" jdbcType = "VARCHAR"/>
+            <result column = "ADDITION3" property = "comment3" jdbcType = "VARCHAR"/>
+            <result column = "ADDITION4" property = "comment4" jdbcType = "VARCHAR"/>
+            <result column = "ADDITION5" property = "comment5" jdbcType = "VARCHAR"/>
+            
+<!--             <result column = "orderAmount" property = "orderAmount" jdbcType = "DECIMAL"/>
+ -->       </resultMap>
+            <select id = "selectByForm" resultMap = "FormResultMap">
+             SELECT 
+               head.ORDER_NUMBER,
+               company.COMPANY_NAME,
+               customer.CUSTOMER_NAME,
+               head.ORDER_DATE,
+               head.ORDER_STATUS,
+               inventory.ITEM_CODE,
+               inventory.ITEM_DESCRIPTION,
+               line.ORDERD_QUANTITY,
+               line.UNIT_SELLING_PRICE,
+               line.ORDERD_QUANTITY * line.UNIT_SELLING_PRICE orderAmount
+        FROM HAP_DEV.HAP_OM_ORDER_HEADERS head,
+             HAP_DEV.HAP_OM_ORDER_LINES line,
+             HAP_DEV.HAP_ORG_COMPANYS company,
+             HAP_DEV.HAP_AR_CUSTOMERS customer,
+             HAP_DEV.HAP_INV_INVENTORY_ITEMS inventory
+        <where>
+            customer.company_id = company.company_id
+            AND head.HEADER_ID = line.HEADER_ID
+            AND line.INVENTORY_ITEM_ID = inventory.INVENTORY_ITEM_ID
+            AND customer.COMPANY_ID = head.company_id
+            AND customer.COMPANY_ID = line.company_id
+
+            <if test="orderNumber != null">
+                AND ORDER_NUMBER like #{orderNumber,jdbcType=VARCHAR}
+            </if>
+            <if test="companyName != null">
+                AND COMPANY_NAME like #{companyName,jdbcType=VARCHAR}
+            </if>
+            <if test="customerName != null">
+                AND customer.CUSTOMER_NAME like #{customerName,jdbcType=VARCHAR}
+            </if>
+            <if test="orderDate != null">
+                AND ORDER_DATE like #{orderDate,jdbcType=TIMESTAMP}
+            </if>
+             <if test="orderStatus != null">
+                AND ORDER_STATUS like #{orderStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="companyId != null">
+                AND company.company_id = #{companyId,jdbcType=VARCHAR}
+            </if> 
+            <if test="itemCode != null">
+                AND inventory.ITEM_CODE like #{itemCode,jdbcType=VARCHAR}
+            </if>
+            </where>
+                
+            </select>
+       
+           <!--  <if test="orderNumber != null">
+                AND order_number like #{orderNumber,jdbcType=VARCHAR}
+            </if>
+            <if test="companyName != null">
+                AND company_name like #{companyName,jdbcType=VARCHAR}
+            </if>
+            <if test="customerName != null">
+                AND customer_name like #{customerName,jdbcType=VARCHAR}
+            </if>
+            <if test="orderDate != null">
+                AND order_date like #{orderDate,jdbcType=TIMESTAMP}
+            </if>
+             <if test="orderStatus != null">
+                AND order_status like #{orderStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="companyId != null">
+                AND hap_org_companys.company_id like #{companyId,jdbcType=VARCHAR}
+            </if> 
+            -->
+            
+    <!-- <insert id="insertFruit" parameterType="hbi.core.demo.dto.Fruit">
+        <selectKey resultType="Long" keyProperty="fruitId" order="BEFORE">
+            select fruit_b_s.nextVal from dual
+            select last_insert_id(fruit_id) as fruit_id from dual;
+        </selectKey>
+        INSERT INTO fruit_b
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="fruitId != null">
+                FRUIT_ID,
+            </if>
+            <if test="fruitName != null">
+                FRUIT_NAME,
+            </if>
+            <if test="fruitDescription != null">
+                FRUIT_DESCRIPTION,
+            </if>
+            <if test="fruitCode != null">
+                FRUIT_CODE,
+            </if>
+            <if test="creationDate != null">
+                creation_date,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="fruitId != null">
+                #{fruitId,jdbcType=DECIMAL},
+            </if>
+            <if test="fruitName != null">
+                #{fruitName,jdbcType=VARCHAR},
+            </if>
+            <if test="fruitDescription != null">
+                #{fruitDescription,jdbcType=VARCHAR},
+            </if>
+            <if test="fruitCode != null">
+                #{fruitCode,jdbcType=VARCHAR},
+            </if>
+            <if test="creationDate != null">
+                #{creationDate,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateFruit" parameterType="hbi.core.demo.dto.Fruit">
+        update fruit_b
+        <set>
+            <if test="fruitName != null">
+                FRUIT_NAME = #{fruitName,jdbcType=VARCHAR},
+            </if>
+            <if test="fruitCode != null">
+                FRUIT_CODE = #{fruitCode,jdbcType=VARCHAR},
+            </if>
+            <if test="fruitDescription != null">
+                FRUIT_DESCRIPTION = #{fruitDescription,jdbcType=VARCHAR},
+            </if>
+            <if test="CreationDate != null">
+                creation_date = #{creationDate,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where FRUIT_ID = #{fruitId,jdbcType=DECIMAL}
+    </update>
+
+    <delete id="deleteFruit" parameterType="hbi.core.demo.dto.Fruit">
+        delete from fruit_b t
+        where t.FRUIT_ID= #{fruitId,jdbcType=DECIMAL}
+    </delete> -->
+    
+</mapper>

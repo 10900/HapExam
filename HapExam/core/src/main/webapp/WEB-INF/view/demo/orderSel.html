@@ -1,0 +1,330 @@
+<#--
+ * description: Fruit.html
+ * version: 1.0 
+ * author:taotao.xu@hand-china.com
+ * #{copyright}#
+ * 
+-->
+<#include "../include/head.html">
+<body style="padding: 10px;">
+<script src="${base.contextPath}/common/code?orderStatus=HAP_OM_ORDER_STATUS" type="text/javascript"></script>
+    <form id="companyForm"></form>
+    <div id="fruitGrid" style="margin: 0; padding: 0"></div>
+    <script type="text/javascript">
+    
+    //查询
+    window.orderInfo = function () {
+        window.popWin = $.ligerDialog.open({
+            load  : false,
+            width : 800,
+            height: 700,
+            url   : 'orderInfo.html'
+        });
+    }; 
+    
+    $(function() {
+        debugger;
+        window['companyForm'] = $("#companyForm").ligerForm({
+        	
+//公司名称lov**************************
+        	
+            fields : [ { //form上的lov：弹出一个页面生成一张表
+                display : '<@spring.message "companynumber"/>',
+                name : "companyId",//最终选中的值字段名
+                type : "popup",
+                newline : true,//是否换行
+                //如果不需要把lov选中的textField值放进data中那么这个属性可以不设置，如果需要放在data中就需要设置
+                textField:'companyNumber',
+        
+                options:{
+                    readonly:false,//是否可编辑
+                    valueField : 'companyId',//选中的valueField
+                    textField : 'companyNumber',//选中的textField
+                    grid : {
+                        columns : [ {
+                            display : '<@spring.message "companynumber"/>',
+                            name : "companyNumber",
+                            width : 120,
+                            type : "text",
+                            align : "left"
+                        }, {
+                            display : '<@spring.message "companyname"/>',
+                            name : "companyName",
+                            width : 120,
+                            type : "text",
+                            align : "left"
+                        }],
+                        //数据查询的url
+                        url : '${base.contextPath}/hbi/company/query' 
+                    },
+                    //lov上的查询条件
+                    condition : {
+                        inputWidth : 120,
+                        labelWidth : 100,
+                        fields : [ {
+                            display : '<@spring.message "companynumber"/>',
+                            name : 'companyNumber',
+                            newline : true,
+                            type : "text"
+                        } ,
+                        {
+                            display : '<@spring.message "companyname"/>',
+                            name : 'companyName',
+                            newline : true,
+                            type : "text"
+                        } 
+                        ],
+                        
+                    }
+                }
+            } , {
+            	
+//lov联动，利用公司id得到客户lov
+            	
+                display: '<@spring.message "customername"/>',
+                name: "customerName",
+                type: "popup",
+                newline : false,
+                textField: 'customerName',
+                options:{
+                    inputWidth : 150,
+                    labelWidth : 70,
+                    textField: 'customerNumber',
+                    valueField: 'customerNumber',
+                    grid : {
+                        columns:[{
+                        display : '<@spring.message "customerNumber"/>',
+                        name : "customerNumber",
+                        newline : false,
+                        type : "text"
+                        },
+                        {
+                        display : '<@spring.message "customerName"/>',
+                        name : "customerName",
+                        newline : false,
+                        type : "text"
+                        }],
+                        url : '${base.contextPath}/hbi/customer/query' 
+                    },
+                    onLoadData: function() {
+                         //设置参数
+                        this.setParm('companyId', $.ligerui.get('companyId').getValue())
+                    }
+                }
+            },
+            
+//订单编码text，选用herder表中orderNumber字段
+            
+            {
+                type : 'text',
+                label : '<@spring.message "header.ordernumber"/>',
+                name : 'orderNumber',
+                newline : false,
+                width: 120
+            },{ 
+//物料lov************************************
+                display : '<@spring.message "item"/>',
+                name : "itemcode",
+                type : "popup",
+                newline : true,
+                textField:'item',
+        
+                options:{
+                    readonly:false,
+                    valueField : 'itemCode',
+                    textField : 'itemCode',
+                    grid : {
+                        columns : [ {
+                            display : '<@spring.message "itemcode"/>',
+                            name : "itemCode",
+                            width : 120,
+                            type : "int",
+                            align : "left"
+                        }, {
+                            display :'<@spring.message "itemdescription"/>',
+                            name : "itemDescription",
+                            width : 120,
+                            type : "text",
+                            align : "left"
+                        }],
+                        url : '${base.contextPath}/hbi/item/query' 
+                    },
+                    condition : {
+                        inputWidth : 150,
+                        labelWidth : 100,
+                        fields : [ {
+                            display : '<@spring.message "itemcode"/>',
+                            name : 'itemCode',
+                            newline : true,
+                            type : "text"
+                        } ,
+                        {
+                            display : '<@spring.message "itemdescription"/>',
+                            name : 'itemDescription',
+                            newline : true,
+                            type : "text"
+                        } 
+                        ],
+                        
+                    }
+                }
+            },{
+//下拉框*****************************
+               /*  type : 'combobox',
+                label : '<@spring.message "header.orderstatus"/>',
+                name : 'orderstatus',
+                options : {
+                    valueField : 'ID',
+                    textField : 'text',
+                    data : [ {
+                        ID : 'Y',
+                        text : 'Y'
+                    }, {
+                        ID : 'N',
+                        text : 'N'
+                    } ]
+                },
+                newline : false */
+            	display : '<@spring.message "orderstatus"/>',
+                name : 'orderstatus',
+                newline : false,
+                width : 130,
+                align : 'counter',
+                textField : 'meaning',
+                type : 'select',
+                editor : {
+                    type : 'select',
+                    data : orderStatus,
+                    valueField : 'value',
+                    textField : 'meaning',
+                    slide : true
+                },
+                validate : {
+                    required : false
+                }
+
+            }
+            ]
+            ,
+            buttons : [ {
+                text : '<@spring.message "hap.query"/>',
+                disabled : false,
+                width : 60,
+                click : function() {
+                    Hap.gridQuery({
+                        form : companyForm,
+                        grid : fruitGrid
+                    })
+                }
+            },{
+                text : '<@spring.message "hap.reset"/>',
+                disabled : false,
+                width : 60,
+                click : function() {
+                    companyForm.reset();
+                }
+            } ,
+            {   
+                text : '<@spring.message "query"/>',
+                disabled : false,
+                width : 60,
+                click : function() {
+                    window.popWin=$.ligerDialog.open({
+                        load :false,
+                        width : 800,
+                        height : 500,
+                        title :'<@spring.message "query"/>',
+                        url:'attach.html'
+          
+                    })
+                }
+            }
+            ]
+        });
+
+        
+       /************************************************************/
+       //gird
+     
+        window['fruitGrid'] = $("#fruitGrid").ligerGrid({
+            unSetValidateAttr : false,
+            columns : [{
+            	//订单号
+                display : '<@spring.message "ordernumber"/>',
+                name : 'orderNumber',
+                align : 'center',
+                width : 120,
+                render : function (item) {
+                    return '<a style="text-decoration:none;" href="#" onclick="orderInfo()">'+item.orderNumber+'</a>'
+                }
+            }, {
+            	//公司名
+                display : '<@spring.message "companyname"/>',
+                name : 'companyName',
+                align : 'center',
+                width : 120, 
+            },{
+            	//顾客名
+                display : '<@spring.message "customername"/>',
+                name : 'customerName',
+                align : 'center',
+                width : 120,
+            }, {
+            	//订单日期
+                display : '<@spring.message "orderdate"/>',
+                name : 'orderDate',
+                align : 'center',
+                width : 150,
+                //format:'yyyy-mm-dd',
+            },
+            
+            {
+            	//订单状态
+                display : '<@spring.message "orderstatus"/>',
+                name : 'orderStatus',
+                align : 'center',
+                width : 150,
+
+            },
+            {
+                //订单金额
+                display : '<@spring.message "orderamount"/>',
+                name : 'orderAmount',
+                align : 'center',
+                width : 150,
+
+            }
+            
+            ],
+            //from表单查询的url*******************
+            url : '${base.contextPath}/hbi/form/query',
+            toolbar : {
+                items : [ {
+                    text : '<@spring.message "hap.new"/>',
+                    disable : false,
+                    click : function() {
+                        //fruitGrid.addRow({})
+                        window.popWin=$.ligerDialog.open({
+                        load :false,
+                        width : 1200,
+                        height : 700,
+                        title :'<@spring.message "new"/>',
+                        url:'addOrder.html'
+          
+                    })
+                    },
+                    icon : 'add'
+                }, {
+                    line : true
+                } ]
+            },
+            enabledEdit : true,
+            width : '99%',
+            height : '98%',
+            checkbox : true
+        });
+    });
+    
+    </script>
+</body>
+</html>

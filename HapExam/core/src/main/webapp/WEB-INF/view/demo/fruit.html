@@ -1,0 +1,345 @@
+<#--
+ * description: 订单
+ * version: 1.0
+ * #copyright#
+ *
+-->
+<#include "../include/head.html">
+<body style="padding: 10px;">
+<form id="orderForm"></form>
+<div id="orderGrid" style="margin: 0; padding: 0"></div>
+<a id="export" href="${base.contextPath}/order/export" style="visibility: hidden;">
+<script src="${base.contextPath}/common/code?orderStatus=HAP_OM_ORDER_STATUS" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+    function exportExcel(){
+        document.getElementById("export").click();
+    }
+
+    //新建
+    window.newOrder = function () {
+        window.popWin = $.ligerDialog.open({
+            //load : false,
+            width : 1000,
+            height: 800,
+            url   : 'addOrder.html'
+        });
+    };
+
+    //查询
+    window.orderInfo = function () {
+        window.popWin = $.ligerDialog.open({
+            load  : false,
+            width : 800,
+            height: 700,
+            url   : 'orderInfo.html'
+        });
+    };
+
+    $(function () {
+        window['orderForm'] = $("#orderForm").ligerForm({
+            fields : [{
+                display  : '公司名称',
+                name     : 'companyId',
+                textField: 'companyName',
+                type     : "popup",
+                newline  :false,
+                options  : {
+                    valueField: 'companyId',
+                    textField : 'companyName',
+                    grid      : {
+                        columns: [{
+                            display: '公司代码',
+                            name   : "companyNumber",
+                            align  : 'left',
+                            width  : 200
+                        }, {
+                            display: '公司全称',
+                            name   : "companyName",
+                            align  : 'left',
+                            width  : 200
+                        }],
+                        url    : '${base.contextPath}/company/query'
+                    },
+                    condition : {
+                        inputWidth: 150,
+                        labelWidth: 70,
+                        fields    : [{
+                            display: '公司代码',
+                            name   : "companyNumber",
+                            newline: true,
+                            type   : "text"
+                        }, {
+                            display: '公司全称',
+                            name   : "companyName",
+                            newline: false,
+                            type   : "text"
+                        }]
+                    }
+                }
+            },{
+                newline: false
+            },{
+                display  : '客户名称',
+                name     : 'customerId',
+                textField: 'customerName',
+                type     : "popup",
+                newline  :false,
+                options  : {
+                    valueField: 'customerId',
+                    textField : 'customerName',
+                    grid      : {
+                        columns: [{
+                            display: '客户代码',
+                            name   : "customerNumber",
+                            align  : 'left',
+                            width  : 200
+                        }, {
+                            display: '客户全称',
+                            name   : "customerName",
+                            align  : 'left',
+                            width  : 200
+                        }],
+                        url    : '${base.contextPath}/customer/query'
+                    },
+                    onLoadData: function() {
+                        //设置参数
+                        this.setParm('companyId', $.ligerui.get('companyId').getValue())
+                    },
+                    condition : {
+                        inputWidth: 150,
+                        labelWidth: 70,
+                        fields    : [{
+                            display: '客户代码',
+                            name   : "customerNumber",
+                            newline: true,
+                            type   : "text"
+                        }, {
+                            display: '客户全称',
+                            name   : "customerName",
+                            newline: false,
+                            type   : "text"
+                        }]
+                    }
+                }
+            },{
+                newline: true
+            },{
+                label: '销售订单号',
+                type : 'text',
+                newline: false,
+                name : 'orderNumber'
+            },{
+                newline: true
+            },{
+                display  : '物料',
+                name     : 'itemCode',
+                textField: 'itemDescription',
+                type     : "popup",
+                newline  :false,
+                options  : {
+                    valueField: 'itemCode',
+                    textField : 'itemDescription',
+                    grid      : {
+                        columns: [{
+                            display: '物料代码',
+                            name   : "itemCode",
+                            align  : 'left',
+                            width  : 200
+                        }, {
+                            display: '物料描述',
+                            name   : "itemDescription",
+                            align  : 'left',
+                            width  : 200
+                        }],
+                        url    : '${base.contextPath}/inventory/query'
+                    },
+                    condition : {
+                        inputWidth: 150,
+                        labelWidth: 70,
+                        fields    : [{
+                            display: '物料代码',
+                            name   : "itemCode",
+                            newline: true,
+                            type   : "text"
+                        }, {
+                            display: '物料描述',
+                            name   : "itemDescription",
+                            newline: false,
+                            type   : "text"
+                        }]
+                    }
+                }
+            },{
+                display : '订单状态',
+                name : 'codeId',
+                width : 200,
+                align : 'counter',
+                textField : 'meaning',
+                type : 'select',
+                newline  :false,
+                editor : {
+                    type : 'select',
+                    data : orderStatus,
+                    valueField : 'value',
+                    textField : 'meaning',
+                    slide : true
+                },
+                validate : {
+                    required : false
+                }
+            }],
+            buttons: [{
+                text    : '<@spring.message "hap.query"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                    Hap.gridQuery({
+                        form: orderForm,
+                        grid: orderGrid
+                    })
+                }
+            },{
+                text    : '重置',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                    orderForm.reset();
+                }
+            },{
+                text    : '导出Excel',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                    exportExcel();
+                }
+            }]
+        });
+
+        window['orderGrid'] = $("#orderGrid").ligerGrid({
+            unSetValidateAttr: false,
+            columns          : [{
+                display: '销售订单号',
+                name   : 'orderNumber',
+                align  : 'left',
+                width  : 120,
+                editor : {
+                    type: 'text'
+                },
+                validate:{
+                    required:false
+                },
+                render : function (item) {
+                    return '<a style="text-decoration:none;" href="#" onclick="orderInfo()">'+item.orderNumber+'</a>'
+                }
+            },{
+                display: '公司名称',
+                name   : 'companyName',
+                align  : 'left',
+                width  : 120,
+                editor : {
+                    type: 'text'
+                },
+                validate:{
+                    required:false
+                }
+            },{
+                display: '客户名称',
+                name   : 'customerName',
+                align  : 'left',
+                width  : 120,
+                editor : {
+                    type: 'text'
+                },
+                validate:{
+                    required:false
+                }
+            },{
+                display: '订单日期',
+                name   : 'orderData',
+                align  : 'left',
+                width  : 120,
+                editor : {
+                    type: 'text'
+                },
+                validate:{
+                    required:false
+                }
+            },{
+                display: '订单状态',
+                name   : 'orderStatus',
+                align  : 'left',
+                width  : 120,
+                editor : {
+                    type: 'text'
+                },
+                validate:{
+                    required:false
+                }
+            },{
+                display: '订单金额',
+                name   : 'rental',
+                align  : 'left',
+                width  : 120,
+                editor : {
+                    type: 'text'
+                },
+                validate:{
+                    required:false
+                }
+            }],
+            url              : '${base.contextPath}/order/query',
+            toolbar          : {
+                items: [{
+                    text   : '<@spring.message "hap.new"/>',
+                    disable: false,
+                    click  : newOrder,
+                    icon   : 'add'
+                }, {
+                    line: true
+                }/*, {
+                    text : '<@spring.message "hap.delete"/>',
+                    click: function () {
+                        Hap.gridDelete({
+                            grid: demoGrid,
+                            url : '${base.contextPath}/demo/delete'
+                        })
+
+                    },
+                    icon : 'delete'
+                }*/, {
+                    line: true
+                }, {
+                    text : '<@spring.message "hap.save"/>',
+                    click: function () {
+                        Hap.gridSave({
+                            grid: demoGrid,
+                            url : '${base.contextPath}/order/submit'
+                        })
+                    },
+                    icon : 'save'
+                }]
+            },
+            enabledEdit      : true,
+            width            : '99%',
+            height           : '98%',
+            checkbox         : true,
+            onBeforeEdit   : function (e) {
+                if (e.column.columnname == 'orderNumber')
+                    return e.record.__status == 'add';
+                if (e.column.columnname == 'companyName')
+                    return e.record.__status == 'add';
+                if (e.column.columnname == 'customerName')
+                    return e.record.__status == 'add';
+                if (e.column.columnname == 'orderData')
+                    return e.record.__status == 'add';
+                if (e.column.columnname == 'orderStatus')
+                    return e.record.__status == 'add';
+                return true;
+            }
+        });
+    });
+</script>
+</body>
+</html>
